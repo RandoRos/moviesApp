@@ -1,20 +1,60 @@
 import React from 'react';
-import logo from './logo.svg';
+import MovieTab from './MoveTab';
+import { generateImgUrl } from './utils';
 
-function App(): React.ReactElement {
+export interface Movie {
+    title: string;
+    id: number;
+    backdrop_path: string;
+    poster_path: string;
+    overview: string;
+    vote_average: number;
+}
+
+const fetchMovies = () => {
+    return fetch('https://api.themoviedb.org/3/trending/movie/week?api_key=f0ca01b13d705814413f3fadc226d9c4').then(
+        (resp) => resp.json(),
+    );
+};
+
+const App: React.FC = () => {
+    const [movies, setMovies] = React.useState<Movie[]>([]);
+    const [selectedMovie, setSelectedMovie] = React.useState<Movie>();
+    React.useEffect(() => {
+        fetchMovies().then((data) => {
+            setMovies(data.results);
+            setSelectedMovie(data.results[0]);
+        });
+    }, []);
     return (
-        <div className="text-center">
-            <header className="bg-gray-500 min-h-screen flex flex-col items-center justify-center text-base text-white">
-                <img src={logo} className="animate-spin-slow h-14 pointer-events-none" alt="logo" />
-                <p>
-                    Edit <code>src/App.tsx</code> and save to reload.
-                </p>
-                <a className="text-light-blue" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
-                    Learn React
-                </a>
+        <div>
+            <header className="felx bg-gray-700 min-h-screen min-w-screen text-base text-white p-4">
+                <div className="text-3xl">CoolCinema</div>
+                {selectedMovie && (
+                    <div className="flex bg-black p-1" style={{ height: '500px' }}>
+                        <img src={generateImgUrl(selectedMovie.backdrop_path)} />
+                        <div className="flex flex-col p-2">
+                            <h1 className="text-5xl mb-5">{selectedMovie.title}</h1>
+                            <p className="text-xl h-32 overflow-hidden">{selectedMovie.overview}</p>
+                            <p className="text-2xl text-right mt-5">Rating: {selectedMovie.vote_average}</p>
+                        </div>
+                    </div>
+                )}
+                <div className="mt-7">
+                    <span>Trending</span>
+                    <div className="flex overflow-x-scroll bg-black">
+                        {movies.map((movie) => (
+                            <MovieTab
+                                key={movie.id}
+                                movie={movie}
+                                handleMovieSelect={(movie: Movie) => setSelectedMovie(movie)}
+                            />
+                        ))}
+                    </div>
+                </div>
             </header>
         </div>
     );
-}
+};
 
 export default App;
