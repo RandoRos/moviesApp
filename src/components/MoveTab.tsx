@@ -1,6 +1,7 @@
 import React from 'react';
-import { Movie } from './App';
-import { generateImgUrl } from './utils';
+
+import { Movie } from '../interfaces';
+import { generateImgUrl } from '../api';
 
 interface Props {
     movie: Movie;

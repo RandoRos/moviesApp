@@ -2,8 +2,7 @@ import React from 'react';
 import Modal from 'react-modal';
 import ReactPlayer from 'react-player';
 
-import { Movie } from './App';
-// import { generateImgUrl } from './utils';
+import { Movie } from '../interfaces';
 
 interface Props {
     show: boolean;

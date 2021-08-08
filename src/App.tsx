@@ -1,48 +1,12 @@
 import React from 'react';
 import ReactPlayer from 'react-player';
 
-import MovieTab from './MoveTab';
-import { generateImgUrl } from './utils';
-import MediaModal from './MediaModal';
+import MovieTab from './components/MoveTab';
+import { generateImgUrl } from './api';
+import MediaModal from './components/MediaModal';
 
-const API_KEY = process.env.REACT_APP_API_KEY;
-
-export interface Movie {
-    title: string;
-    id: number;
-    backdrop_path: string;
-    poster_path: string;
-    overview: string;
-    vote_average: number;
-    genre_ids: number[];
-    release_date: string;
-}
-
-export interface Trailer {
-    type: string;
-    site: string;
-    key: string;
-}
-
-export interface Genre {
-    id: number;
-    name: string;
-}
-
-export type GenreObject = {
-    [id: number]: string;
-};
-
-const fetchMovies = () => {
-    return fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`).then((resp) => resp.json());
-};
-
-const fetchGenres = () => {
-    return fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`).then((resp) => resp.json());
-};
-
-const fetchTrailers = (id: number) =>
-    fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`).then((resp) => resp.json());
+import { fetchTrendingMovies, fetchGenres, fetchTrailers } from './api';
+import { Movie, Genre, GenreObject, Trailer } from './interfaces';
 
 const App: React.FC = () => {
     const [movies, setMovies] = React.useState<Movie[]>([]);
@@ -52,17 +16,17 @@ const App: React.FC = () => {
     const [show, setShow] = React.useState(false);
 
     React.useEffect(() => {
-        fetchMovies().then((data) => {
+        fetchTrendingMovies().then((data) => {
             setMovies(data.results);
             setSelectedMovie(data.results[0]);
-            fetchTrailers(data.results[0].id).then((resp: any) => {
-                const results = resp.results;
+            fetchTrailers(data.results[0].id).then(({ results }) => {
                 const t = results.find((r: Trailer) => r.site === 'YouTube' && r.type === 'Trailer');
-                setTrailer(t.key);
+                setTrailer(t ? t.key : '');
             });
         });
-        fetchGenres().then(({ genres }) => {
-            const genresObj = genres.reduce((a: GenreObject, c: Genre): GenreObject => {
+        fetchGenres().then((results) => {
+            console.log(results);
+            const genresObj = results.genres.reduce((a: GenreObject, c: Genre): GenreObject => {
                 a[c.id] = c.name;
                 return a;
             }, {});
