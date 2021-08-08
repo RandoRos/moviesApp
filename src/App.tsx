@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactPlayer from 'react-player';
 
-import MovieTab from './components/MoveTab';
+import MovieTab from './components/MediaTab';
 import { generateImgUrl } from './api';
 import MediaModal from './components/MediaModal';
 
 import { fetchTrendingMovies, fetchGenres, fetchTrailers } from './api';
-import { Movie, Genre, GenreObject, Trailer } from './interfaces';
+import { Media, Genre, GenreObject, Trailer } from './interfaces';
 
 const App: React.FC = () => {
-    const [movies, setMovies] = React.useState<Movie[]>([]);
+    const [movies, setMovies] = React.useState<Media[]>([]);
     const [genres, setGenres] = React.useState<GenreObject>({});
-    const [selectedMovie, setSelectedMovie] = React.useState<Movie>();
+    const [selectedMovie, setSelectedMovie] = React.useState<Media>();
     const [trailer, setTrailer] = React.useState('8g18jFHCLXk');
     const [show, setShow] = React.useState(false);
 
@@ -25,7 +25,6 @@ const App: React.FC = () => {
             });
         });
         fetchGenres().then((results) => {
-            console.log(results);
             const genresObj = results.genres.reduce((a: GenreObject, c: Genre): GenreObject => {
                 a[c.id] = c.name;
                 return a;
@@ -79,45 +78,43 @@ const App: React.FC = () => {
                         )}
                         <div className={`absolute left-10 bottom-96 flex flex-col p-3 ${show ? 'z-auto' : 'z-10'}`}>
                             <h1 className="text-7xl mb-5">{selectedMovie.title}</h1>
+                            <div className="text-base bg-white text-black px-2 text-center rounded-md whitespace-nowrap w-16 mb-5">
+                                <strong>{new Date(selectedMovie.release_date).getFullYear()}</strong>
+                            </div>
                             <div className="flex flex-row justify-start w-18 mt-1 mb-3">
-                                {/* <div className="text-base bg-gray-600 px-2 min-w-20 block text-center rounded-md">
-                                    <strong>{selectedMovie.vote_average}</strong>
-                                </div> */}
-                                <div className="text-base bg-gray-500 px-2 text-center rounded-md whitespace-nowrap">
-                                    <strong>{genres[selectedMovie.genre_ids[0]]}</strong>
-                                </div>
-                                <div className="text-base bg-gray-500 px-2 text-center rounded-md ml-5 whitespace-nowrap">
-                                    <strong>{new Date(selectedMovie.release_date).getFullYear()}</strong>
-                                </div>
+                                {selectedMovie.genre_ids.map((id) => (
+                                    <div
+                                        key={id}
+                                        className="text-base bg-none px-2 text-center rounded-md whitespace-nowrap border-2 border-solid mr-2"
+                                    >
+                                        <strong>{genres[id]}</strong>
+                                    </div>
+                                ))}
                             </div>
                             <button
-                                className="absolute text-xl bg-gray-600 py-1 px-8 w-55 rounded-md"
+                                className="absolute text-xl bg-none py-1 px-8 w-55 rounded-md border-2 border-solid hover:bg-gray-700 outline-none"
                                 style={{ bottom: '-40px' }}
                                 onClick={() => setShow(true)}
                             >
                                 <strong>More Info</strong>
                             </button>
-                            <MediaModal show={show} movie={selectedMovie} handleClose={() => setShow(false)} />
-                            {/* <p className="text-xl h-32 overflow-hidden">{selectedMovie.overview}</p> */}
+                            <MediaModal show={show} media={selectedMovie} handleClose={() => setShow(false)} />
                         </div>
                     </div>
                 )}
                 <div className="mt-7">
                     <span className="text-lg">Trending Now</span>
                     <div className="overflow-x-scroll bg-black h-64 whitespace-nowrap">
-                        {movies.map((movie) => (
+                        {movies.map((media) => (
                             <MovieTab
-                                key={movie.id}
-                                movie={movie}
-                                handleMovieSelect={(movie: Movie) => {
-                                    fetchTrailers(movie.id).then((resp: any) => {
-                                        const results = resp.results;
-                                        const t = results.find(
-                                            (r: Trailer) => r.site === 'YouTube' && r.type === 'Trailer',
-                                        );
+                                key={media.id}
+                                media={media}
+                                handleMovieSelect={(media: Media) => {
+                                    fetchTrailers(media.id).then(({ results }) => {
+                                        const t = results.find((r) => r.site === 'YouTube' && r.type === 'Trailer');
                                         setTrailer(t ? t.key : '');
                                     });
-                                    setSelectedMovie(movie);
+                                    setSelectedMovie(media);
                                 }}
                                 handleMovieClick={() => setShow(true)}
                             />

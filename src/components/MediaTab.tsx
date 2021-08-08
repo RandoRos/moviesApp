@@ -1,22 +1,22 @@
 import React from 'react';
 
-import { Movie } from '../interfaces';
+import { Media } from '../interfaces';
 import { generateImgUrl } from '../api';
 
 interface Props {
-    movie: Movie;
-    handleMovieSelect: (movie: Movie) => void;
+    media: Media;
+    handleMovieSelect: (media: Media) => void;
     handleMovieClick: () => void;
 }
 
-const MovieTab: React.FC<Props> = ({ movie, handleMovieSelect, handleMovieClick }) => {
+const MovieTab: React.FC<Props> = ({ media, handleMovieSelect, handleMovieClick }) => {
     return (
         <div
             className="h-full bg-gray-900 p-1 mr-2 cursor-pointer inline-block"
-            onMouseEnter={() => handleMovieSelect(movie)}
+            onMouseEnter={() => handleMovieSelect(media)}
             onClick={handleMovieClick}
         >
-            <img className="h-full" src={generateImgUrl(movie.poster_path, 'w400')} />
+            <img className="h-full" src={generateImgUrl(media.poster_path, 'w400')} />
         </div>
     );
 };

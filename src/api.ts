@@ -1,4 +1,4 @@
-import { Movie, Genre, Trailer } from './interfaces';
+import { Media, Genre, Trailer } from './interfaces';
 
 const baseUrl = 'https://api.themoviedb.org/3/';
 
@@ -16,7 +16,7 @@ const fetchWrapper = <T>(url: string): Promise<ApiResponse<T>> => {
         });
 };
 
-export const fetchTrendingMovies = () => fetchWrapper<Movie>(`${baseUrl}trending/movie/week?api_key=${API_KEY}`);
+export const fetchTrendingMovies = () => fetchWrapper<Media>(`${baseUrl}trending/movie/week?api_key=${API_KEY}`);
 
 export const fetchGenres = () => fetchWrapper<Genre>(`${baseUrl}genre/movie/list?api_key=${API_KEY}`);
 
