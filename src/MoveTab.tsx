@@ -5,15 +5,17 @@ import { generateImgUrl } from './utils';
 interface Props {
     movie: Movie;
     handleMovieSelect: (movie: Movie) => void;
+    handleMovieClick: () => void;
 }
 
-const MovieTab: React.FC<Props> = ({ movie, handleMovieSelect }) => {
+const MovieTab: React.FC<Props> = ({ movie, handleMovieSelect, handleMovieClick }) => {
     return (
         <div
-            className="w-64 content-center items-center bg-gray-900 p-1 mr-3 cursor-pointer"
+            className="h-full bg-gray-900 p-1 mr-2 cursor-pointer inline-block"
             onMouseEnter={() => handleMovieSelect(movie)}
+            onClick={handleMovieClick}
         >
-            <img className="w-full" src={generateImgUrl(movie.poster_path, 'w400')} />
+            <img className="h-full" src={generateImgUrl(movie.poster_path, 'w400')} />
         </div>
     );
 };
