@@ -1,4 +1,4 @@
-import { Media, Genre, Trailer } from './interfaces';
+import { MediaData, Genre, MediaTrailer } from './interfaces';
 
 const baseUrl = 'https://api.themoviedb.org/3/';
 
@@ -16,11 +16,17 @@ const fetchWrapper = <T>(url: string): Promise<ApiResponse<T>> => {
         });
 };
 
-export const fetchTrendingMovies = () => fetchWrapper<Media>(`${baseUrl}trending/movie/week?api_key=${API_KEY}`);
+export const fetchTrendingMovies = (): Promise<ApiResponse<MediaData>> =>
+    fetchWrapper<MediaData>(`${baseUrl}trending/movie/week?api_key=${API_KEY}`);
 
-export const fetchGenres = () => fetchWrapper<Genre>(`${baseUrl}genre/movie/list?api_key=${API_KEY}`);
+export const fetchMovies = (genres: string): Promise<ApiResponse<MediaData>> =>
+    fetchWrapper<MediaData>(`${baseUrl}discover/movie?api_key=${API_KEY}&with_genres=${genres}`);
 
-export const fetchTrailers = (id: number) => fetchWrapper<Trailer>(`${baseUrl}movie/${id}/videos?api_key=${API_KEY}`);
+export const fetchGenres = (): Promise<ApiResponse<Genre>> =>
+    fetchWrapper<Genre>(`${baseUrl}genre/movie/list?api_key=${API_KEY}`);
+
+export const fetchTrailers = (id: number): Promise<ApiResponse<MediaTrailer>> =>
+    fetchWrapper<MediaTrailer>(`${baseUrl}movie/${id}/videos?api_key=${API_KEY}`);
 
 export const generateImgUrl = (imgUrl: string, width = 'original'): string => {
     return `https://image.tmdb.org/t/p/${width}/${imgUrl}`;

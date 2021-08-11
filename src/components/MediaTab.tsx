@@ -12,11 +12,14 @@ interface Props {
 const MovieTab: React.FC<Props> = ({ media, handleMovieSelect, handleMovieClick }) => {
     return (
         <div
-            className="h-full bg-gray-900 p-1 mr-2 cursor-pointer inline-block"
+            className="h-full bg-gray-900 p-1 mr-2 cursor-pointer inline-block "
             onMouseEnter={() => handleMovieSelect(media)}
             onClick={handleMovieClick}
         >
-            <img className="h-full" src={generateImgUrl(media.poster_path, 'w400')} />
+            <img
+                className="h-full hover:border-white hover:border-solid hover:border-8"
+                src={generateImgUrl(media.poster_path, 'w400')}
+            />
         </div>
     );
 };

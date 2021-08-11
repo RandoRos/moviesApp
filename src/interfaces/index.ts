@@ -1,4 +1,4 @@
-export interface Media {
+export interface MediaData {
     title: string;
     id: number;
     backdrop_path: string;
@@ -7,12 +7,17 @@ export interface Media {
     vote_average: number;
     genre_ids: number[];
     release_date: string;
+    original_language: string;
 }
 
-export interface Trailer {
+export interface MediaTrailer {
     type: string;
     site: string;
     key: string;
+}
+
+export interface Media extends MediaData {
+    trailer?: MediaTrailer;
 }
 
 export interface Genre {

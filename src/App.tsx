@@ -1,29 +1,40 @@
 import React from 'react';
 import ReactPlayer from 'react-player';
 
-import MovieTab from './components/MediaTab';
 import { generateImgUrl } from './api';
 import MediaModal from './components/MediaModal';
+import MediaRail from './components/MediaRail';
 
-import { fetchTrendingMovies, fetchGenres, fetchTrailers } from './api';
-import { Media, Genre, GenreObject, Trailer } from './interfaces';
+import { fetchTrendingMovies, fetchGenres, fetchTrailers, fetchMovies } from './api';
+import { Media, Genre, GenreObject, MediaTrailer } from './interfaces';
+import { voteColorClass, calcVotePerc } from './utils';
 
 const App: React.FC = () => {
     const [movies, setMovies] = React.useState<Media[]>([]);
     const [genres, setGenres] = React.useState<GenreObject>({});
     const [selectedMovie, setSelectedMovie] = React.useState<Media>();
-    const [trailer, setTrailer] = React.useState('8g18jFHCLXk');
     const [show, setShow] = React.useState(false);
 
-    React.useEffect(() => {
+    const handleSelectedMedia = (media: Media) => {
+        fetchTrailers(media.id)
+            .then(({ results }) => {
+                const trailer = results.find((r: MediaTrailer) => r.site === 'YouTube' && r.type === 'Trailer');
+                if (trailer) {
+                    media['trailer'] = trailer;
+                }
+            })
+            .finally(() => {
+                setSelectedMovie(media);
+            });
+    };
+
+    const getTrendingMovies = () =>
         fetchTrendingMovies().then((data) => {
             setMovies(data.results);
-            setSelectedMovie(data.results[0]);
-            fetchTrailers(data.results[0].id).then(({ results }) => {
-                const t = results.find((r: Trailer) => r.site === 'YouTube' && r.type === 'Trailer');
-                setTrailer(t ? t.key : '');
-            });
+            handleSelectedMedia(data.results[0]);
         });
+
+    const getGenres = () =>
         fetchGenres().then((results) => {
             const genresObj = results.genres.reduce((a: GenreObject, c: Genre): GenreObject => {
                 a[c.id] = c.name;
@@ -31,7 +42,11 @@ const App: React.FC = () => {
             }, {});
             setGenres(genresObj);
         });
+
+    React.useEffect(() => {
+        Promise.all([getTrendingMovies(), getGenres()]);
     }, []);
+
     return (
         <div>
             <header className="felx bg-gray-800 min-h-screen text-base text-white p-4">
@@ -51,17 +66,15 @@ const App: React.FC = () => {
                 </div>
                 {selectedMovie && (
                     <div className="flex justify-center bg-black p-1" style={{ height: '600px' }}>
-                        {(!trailer || trailer === '' || show) && (
-                            <img src={generateImgUrl(selectedMovie.backdrop_path)} />
-                        )}
-                        {trailer && trailer !== '' && !show && (
+                        {(!selectedMovie.trailer || show) && <img src={generateImgUrl(selectedMovie.backdrop_path)} />}
+                        {selectedMovie.trailer && !show && (
                             <React.Fragment>
                                 <div
                                     className="bg-black absolute opacity-40 z-10"
                                     style={{
                                         height: '600px',
                                         left: '15px',
-                                        width: '95%',
+                                        width: '98%',
                                         display: show ? 'none' : 'inherit',
                                     }}
                                 />
@@ -72,20 +85,41 @@ const App: React.FC = () => {
                                     playing
                                     loop
                                     muted
-                                    url={`https://www.youtube.com/watch?v=${trailer}`}
+                                    url={`https://www.youtube.com/watch?v=${selectedMovie.trailer.key}`}
                                 />
                             </React.Fragment>
                         )}
                         <div className={`absolute left-10 bottom-96 flex flex-col p-3 ${show ? 'z-auto' : 'z-10'}`}>
                             <h1 className="text-7xl mb-5">{selectedMovie.title}</h1>
-                            <div className="text-base bg-white text-black px-2 text-center rounded-md whitespace-nowrap w-16 mb-5">
-                                <strong>{new Date(selectedMovie.release_date).getFullYear()}</strong>
+                            <div className="flex flex-row w-full">
+                                <div className="uppercase">
+                                    <strong>{selectedMovie.original_language}</strong>
+                                </div>
+                                <div className="ml-4 text-base bg-white text-black px-2 text-center rounded-md whitespace-nowrap w-16 mb-5">
+                                    <strong>{new Date(selectedMovie.release_date).getFullYear()}</strong>
+                                </div>
+                                <div
+                                    className={`ml-4 bg-none border-solid border-2 px-1 rounded-md w-9 text-center ${voteColorClass(
+                                        selectedMovie.vote_average,
+                                        true,
+                                    )}`}
+                                    style={{ height: '24px', lineHeight: '20px' }}
+                                >
+                                    <span>
+                                        <strong>{calcVotePerc(selectedMovie.vote_average)}</strong>
+                                    </span>
+                                </div>
                             </div>
                             <div className="flex flex-row justify-start w-18 mt-1 mb-3">
                                 {selectedMovie.genre_ids.map((id) => (
                                     <div
                                         key={id}
-                                        className="text-base bg-none px-2 text-center rounded-md whitespace-nowrap border-2 border-solid mr-2"
+                                        className="text-base bg-none px-2 text-center rounded-md whitespace-nowrap border-2 border-solid mr-2 cursor-pointer"
+                                        onClick={() => {
+                                            fetchMovies(id.toString()).then((data) => {
+                                                setMovies(data.results);
+                                            });
+                                        }}
                                     >
                                         <strong>{genres[id]}</strong>
                                     </div>
@@ -103,23 +137,12 @@ const App: React.FC = () => {
                     </div>
                 )}
                 <div className="mt-7">
-                    <span className="text-lg">Trending Now</span>
-                    <div className="overflow-x-scroll bg-black h-64 whitespace-nowrap">
-                        {movies.map((media) => (
-                            <MovieTab
-                                key={media.id}
-                                media={media}
-                                handleMovieSelect={(media: Media) => {
-                                    fetchTrailers(media.id).then(({ results }) => {
-                                        const t = results.find((r) => r.site === 'YouTube' && r.type === 'Trailer');
-                                        setTrailer(t ? t.key : '');
-                                    });
-                                    setSelectedMovie(media);
-                                }}
-                                handleMovieClick={() => setShow(true)}
-                            />
-                        ))}
-                    </div>
+                    <MediaRail
+                        title="Trending Now"
+                        mediaArray={movies}
+                        handleSelectedMedia={handleSelectedMedia}
+                        handleModalOpen={() => setShow(true)}
+                    />
                 </div>
             </header>
         </div>

@@ -3,6 +3,7 @@ import Modal from 'react-modal';
 import ReactPlayer from 'react-player';
 
 import { Media } from '../interfaces';
+import { voteColorClass, calcVotePerc } from '../utils';
 
 interface Props {
     show: boolean;
@@ -10,22 +11,12 @@ interface Props {
     handleClose: () => void;
 }
 
-const voteColor = (vote: number) => {
-    if (vote >= 8) {
-        return 'bg-green-600';
-    } else if (vote >= 5) {
-        return 'bg-yellow-300 text-black';
-    } else {
-        return 'bg-red-600';
-    }
-};
-
 const MediaModal: React.FC<Props> = ({ show, media, handleClose }) => {
     return (
         <Modal
             isOpen={show}
             onRequestClose={() => handleClose()}
-            className="bg-gray-900 m-auto text-white align-middle rounded-lg"
+            className="bg-gray-900 m-auto text-white align-middle rounded-lg outline-none"
             style={{ content: { width: '900px', height: '80%', zIndex: 99 } }}
             overlayClassName="Overlay"
         >
@@ -43,8 +34,8 @@ const MediaModal: React.FC<Props> = ({ show, media, handleClose }) => {
                     loop={true}
                     url="https://www.youtube.com/watch?v=8g18jFHCLXk"
                 />
-                <span className={`${voteColor(media.vote_average)} p-1 w-12 text-center rounded-md`}>
-                    <strong>{Math.round(((media.vote_average * 10) / 100) * 100)}%</strong>
+                <span className={`${voteColorClass(media.vote_average)} p-1 w-12 text-center rounded-md`}>
+                    <strong>{calcVotePerc(media.vote_average)}%</strong>
                 </span>
             </div>
         </Modal>
